@@ -1,0 +1,19 @@
+---
+- hosts: host2
+  become: true
+
+  tasks:
+  - name: install nginx
+    apt: name=nginx state=latest
+    notify:
+     - copy web site content
+     - restart nginx
+ 
+  handlers:  
+  - name: copy web site content
+    copy: 
+     src: ./index.html 
+     dest: /var/www/html
+   
+  - name: restart nginx 
+    service: name=nginx state=restarted
