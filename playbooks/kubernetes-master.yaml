@@ -1,5 +1,5 @@
 ---
-- hosts: host2
+- hosts: host1
   become: true
 
   tasks:
@@ -50,16 +50,22 @@
     command: kubeadm init
 
 #  - name: export KUBECONFIG
-#    command: sudo export KUBECONFIG=/etc/kubernetes/admin.conf
+#    command: export KUBECONFIG=/etc/kubernetes/admin.conf
+#    become: yes
 
   - name: mkdir -p $HOME/.kube
-    command: mkdir -p $HOME/.kube
+    file: path=$HOME/.kube state=directory
 
   - name:  cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     command: cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 
-  - name: chown $(id -u):$(id -g) $HOME/.kube/config
-    command: chown $(id -u):$(id -g) $HOME/.kube/config 
+#  - name: chown $(id -u):$(id -g) $HOME/.kube/config
+#    command: chown $(id -u):$(id -g) $HOME/.kube/config 
+  - file:
+      path: $HOME/.kube/config
+      #owner: '{{ ansible_user_id }}'
+      owner: '{{ ansible_env.SUDO_UID }}'
+      group: '{{ ansible_env.SUDO_GID }}'
 
-  - name: install WEAVE (CNI)
-    command: kubectl apply -f https://git.io/weave-kube-1.6
+#  - name: install WEAVE (CNI)
+#    command: kubectl apply -f https://git.io/weave-kube-1.6
