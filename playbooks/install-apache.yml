@@ -1,0 +1,43 @@
+---
+- hosts: targets
+  become: true  
+
+  tasks:
+
+  - name: check status of apache
+    #command: service apache2 status
+    #shell: service apache2 status
+    service: name=apache2 state=restarted 
+    register: apache_stat
+    ignore_errors: True   
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' 
+  
+  - name: apache status
+    debug: var=apache_stat.skipped
+
+  - name: install apache2 on ubuntu in case not exist
+    apt: name=apache2 state=latest
+    #when: apache_stat.rc and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+    when: apache_stat.skipped="false" and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')  
+
+  - name: apache activation status
+    debug: var=apache_stat.status.ActiveState
+
+  - name: start apache2 service
+    service: name=apache2 state=restarted
+    when: apache_stat.status.ActiveState == 'inactive' 
+
+  - name: check status of httpd  
+    service: name=https state=restarted
+    register: httpd_stat
+    ignore_errors: True
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+ 
+  - name: httpd status
+    debug: var=httpd_stat.skipped
+
+  - name: install httpd on CentOS in case not exist
+    yum: name=httpd state=latest
+    when: httpd_stat.skipped=="false" and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux')
+
+
