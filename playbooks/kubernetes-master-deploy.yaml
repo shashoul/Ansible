@@ -4,16 +4,6 @@
 
   tasks:
 
-  #- name: back up /etc/fstab
-  #  command: cp /etc/fstab /etc/fstab.bak
-
-  #- name: remove swapfile from /etc/fstab
-    #command: sed -i '/\/swapfile/d' /etc/fstab
-  #  lineinfile:
-  #     dest: /etc/fstab
-  #     regexp: ^swapfile
-  #     state: absent
- 
   - name: comment swapfile from /etc/fstab
     replace:
       path: /etc/fstab

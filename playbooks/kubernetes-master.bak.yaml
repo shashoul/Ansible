@@ -1,39 +1,28 @@
 ---
 - hosts: host1
-  become: true  
+  become: true
 
   tasks:
-
-  #- name: back up /etc/fstab
-  #  command: cp /etc/fstab /etc/fstab.bak
-
-  #- name: remove swapfile from /etc/fstab
-    #command: sed -i '/\/swapfile/d' /etc/fstab
-  #  lineinfile:
-  #     dest: /etc/fstab
-  #     regexp: ^swapfile
-  #     state: absent
- 
-  - name: comment swapfile from /etc/fstab
-    replace:
-      path: /etc/fstab
-      regexp: '^/swapfile'
-      replace: '#/swapfile'
-
-  - name: swapoff -a
-    command: swapoff -a
-
   - name: apt update
     apt: update_cache=yes
  
   - name: install apt-transport-https
     apt: name=apt-transport-https state=latest
   
-  - name: install docker
+  - name: install docker 
     apt: name=docker.io state=latest
  
   - name: start docker
     service: name=docker state=restarted
+
+#  - name: Remove swapfile from /etc/fstab
+#    mount:
+#      name: swap
+#      fstype: swap
+#      state: absent
+
+#  - name: Disable swap
+#    command: swapoff -a
 
   - name: download and add the key for the kubernetes install
     apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg state=present
@@ -47,21 +36,22 @@
   - name: apt update
     apt: update_cache=yes
 
-  - name: install kubelet kubeadm kubectl
+  - name: install kubelet kubeadm kubectl 
     apt: name={{ item }} state=latest
     with_items:
       - kubelet
       - kubeadm
       - kubectl
   
-  - name: delete ./kube 
-    file: path=$HOME/.kube state=absent
-  
-  - name: kubeadm reset
+  - name: kubeadm reset 
     command: kubeadm reset
   
   - name: Kubeadm init
     command: kubeadm init
+
+#  - name: export KUBECONFIG
+#    command: export KUBECONFIG=/etc/kubernetes/admin.conf
+#    become: yes
 
   - name: mkdir -p $HOME/.kube
     file: path=$HOME/.kube state=directory
@@ -69,5 +59,13 @@
   - name:  cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     command: cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 
-  - name: install WEAVE (CNI)
-    command: kubectl apply -f https://git.io/weave-kube-1.6
+#  - name: chown $(id -u):$(id -g) $HOME/.kube/config
+#    command: chown $(id -u):$(id -g) $HOME/.kube/config 
+  - file:
+      path: $HOME/.kube/config
+      #owner: '{{ ansible_user_id }}'
+      owner: '{{ ansible_env.SUDO_UID }}'
+      group: '{{ ansible_env.SUDO_GID }}'
+
+#  - name: install WEAVE (CNI)
+#    command: kubectl apply -f https://git.io/weave-kube-1.6
