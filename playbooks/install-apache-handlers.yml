@@ -1,0 +1,48 @@
+---
+#
+# The following playbook attempt to install 
+# apache2 on Ubuntu or httpd on Centos
+#
+- hosts: host0
+  become: true  
+
+  tasks:
+
+##
+# following tasks going to install apache2 on Ubuntu
+##
+  - name: check apache2 service status in case we running on Ubuntu
+    shell: service apache2 status
+    register: apache_status
+    ignore_errors: True   
+    args: 
+      warn: false
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' 
+
+  - name: install apache2 on ubuntu in case the service not installed
+    apt: name=apache2 state=latest
+    notify: start apache service on Ubuntu
+    when: apache_status.failed is defined and apache_status.failed == true and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+
+##
+# following tasks going to install httpd on Centos
+##
+  - name: check httpd service status in case we running on Centos  
+    shell: service httpd status
+    register: httpd_status
+    ignore_errors: True
+    args:
+      warn: false
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+  - name: install httpd on CentOS in case the service not installed
+    yum: name=httpd state=latest
+    notify: start httpd on Centos
+    when: httpd_status.failed is defined and httpd_status.failed == true and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux')
+  
+  handlers:
+  - name: start apache service on Ubuntu
+    service: name=apache2 state=restarted
+
+  - name: start httpd on Centos
+    service: name=httpd state=restarted
