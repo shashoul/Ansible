@@ -3,7 +3,7 @@
   become: true  
 
   tasks:
-
+             
   - name: comment swapfile from /etc/fstab
     replace:
       path: /etc/fstab

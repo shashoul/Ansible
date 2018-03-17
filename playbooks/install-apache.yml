@@ -1,43 +1,45 @@
 ---
-- hosts: targets
+#
+# The following playbook attempt to install 
+# apache2 on Ubuntu or httpd on Centos
+#
+- hosts: host0
   become: true  
 
   tasks:
 
-  - name: check status of apache
-    #command: service apache2 status
-    #shell: service apache2 status
-    service: name=apache2 state=restarted 
-    register: apache_stat
+##
+# following tasks going to install apache2 on Ubuntu
+##
+  - name: check apache2 service status in case we running on Ubuntu
+    shell: service apache2 status
+    register: apache_status
     ignore_errors: True   
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' 
-  
-  - name: apache status
-    debug: var=apache_stat.skipped
 
-  - name: install apache2 on ubuntu in case not exist
+  - name: install apache2 on ubuntu in case the service not installed
     apt: name=apache2 state=latest
-    #when: apache_stat.rc and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
-    when: apache_stat.skipped="false" and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')  
+    register: apache_install
+    when: apache_status.failed is defined and apache_status.failed == true and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')  
 
-  - name: apache activation status
-    debug: var=apache_stat.status.ActiveState
-
-  - name: start apache2 service
+  - name: start apache2 service on Ubuntu
     service: name=apache2 state=restarted
-    when: apache_stat.status.ActiveState == 'inactive' 
+    when: apache_install.skipped is defined and apache_install.skipped == false and ( ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' )  
 
-  - name: check status of httpd  
-    service: name=https state=restarted
-    register: httpd_stat
+##
+# following tasks going to install httpd on Centos
+##
+  - name: check httpd service status in case we running on Centos  
+    shell: service httpd status
+    register: httpd_status
     ignore_errors: True
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
- 
-  - name: httpd status
-    debug: var=httpd_stat.skipped
 
-  - name: install httpd on CentOS in case not exist
+  - name: install httpd on CentOS in case the service not installed
     yum: name=httpd state=latest
-    when: httpd_stat.skipped=="false" and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux')
+    register: httpd_install
+    when: httpd_status.failed is defined and httpd_status.failed == true and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux')
 
-
+  - name: start httpd service on Centos
+    service: name=httpd state=restarted
+    when: httpd_install.skipped is defined and httpd_install.skipped == false and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux')
