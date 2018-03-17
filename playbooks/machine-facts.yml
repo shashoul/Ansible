@@ -37,4 +37,6 @@
     service: name=apache2 state=restarted
     #register: apache_start
     #ignore_errors: True 
-    when: apache_install.skipped == false and ( ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu') 
+    when: apache_install.skipped is defined and apache_install.skipped == false and ( ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu') 
+
+  - template: src=index.html dest=/etc/index.html
