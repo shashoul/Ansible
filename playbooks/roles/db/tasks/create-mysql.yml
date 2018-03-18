@@ -1,0 +1,7 @@
+---
+# create mysql database
+- name: Create a new database with name 'ansible'
+  mysql_db:
+    name: ansible
+    state: present
+

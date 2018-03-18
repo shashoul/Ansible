@@ -1,0 +1,6 @@
+--- 
+# call role(install-apache) in order to install apache
+- hosts: targets
+  become: true  
+  roles:
+    - install-apache

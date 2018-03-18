@@ -1,0 +1,7 @@
+---
+# install mysql on Ubuntu
+- name: install mysql on Ubuntu
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - mysql-server-5.6
+    - mysql-client-5.6

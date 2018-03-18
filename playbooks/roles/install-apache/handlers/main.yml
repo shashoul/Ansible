@@ -1,0 +1,5 @@
+---
+# handlers file for web
+- import_tasks: restart-apache.yml
+#- name: start apache service on Ubuntu
+#  service: name=apache2 state=restarted
