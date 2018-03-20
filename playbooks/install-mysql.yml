@@ -1,0 +1,83 @@
+---
+#
+# The following playbook attempt to install 
+# mysql-server on Ubuntu.
+#
+- hosts: host1
+  become: true  
+
+  vars:
+    root_pass: foo123
+
+  tasks:
+
+  - name: mysql set root password
+    shell: debconf-set-selections <<< "mysql-server mysql-server/root_password password {{ root_pass }}"
+    args:
+      executable: /bin/bash
+
+  - name: mysql confirm root password
+    shell: debconf-set-selections <<< "mysql-server mysql-server/root_password_again password {{ root_pass }}"
+    args:
+      executable: /bin/bash
+    
+  - name: apt update
+    apt: update_cache=yes
+    
+  #- name: install mysql-server
+  #  apt: name=mysql-server state=latest
+  #  notify: restart mysql-server
+  
+  #- name: install python-mysqldb
+  #  apt: name=python-mysqldb state=latest
+
+  #- name: install libmysqlclient-dev
+  #  apt: name=libmysqlclient-dev state=latest
+
+  #- name: install python-pip
+  #  apt: name=python-pip state=latest
+  
+  - name: install mysql-server / python-mysqldb / libmysqlclient-dev / python-pip
+    apt: name={{item}} state=latest
+    with_items:
+      - mysql-server
+      - python-mysqldb
+      - libmysqlclient-dev
+      - python-pip
+    notify: restart mysql-server
+
+  - name: install mysql-python module 
+    pip: name=mysql-python state=latest
+  
+  - meta: flush_handlers
+
+  # create mysql database
+  - name: Create a new database with name 'ansible'
+    mysql_db:
+      name: ansible
+      login_user: root
+      login_password: '{{root_pass}}'
+      state: present
+
+  - name: create mysql queries files directory
+    file: path=/tmp/mysql-queries state=directory
+
+  - name: copy sql files to host 
+    copy: src=mysql-create-table.sql dest=/tmp/mysql-queries
+
+  - name: Create Person Table in ansible db
+    mysql_db:
+      name: ansible
+      login_user: root
+      login_password: '{{root_pass}}' 
+      state: import
+      target: /tmp/mysql-queries/mysql-create-table.sql
+    notify: restart mysql-server
+
+  handlers:
+
+  - name: restart mysql-server
+    service: name=mysql state=restarted 
+      
+       
+         

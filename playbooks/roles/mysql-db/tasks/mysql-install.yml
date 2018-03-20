@@ -1,5 +1,7 @@
 ---
-# install mysql on Ubunt
+#
+# set mysql root user password before install it.
+#
 - name: mysql set root password
   shell: debconf-set-selections <<< "mysql-server mysql-server/root_password password {{ mysql_root_pass }}"
   args:
@@ -9,7 +11,10 @@
   shell: debconf-set-selections <<< "mysql-server mysql-server/root_password_again password {{ mysql_root_pass }}"
   args:
     executable: /bin/bash
-    
+
+#
+# apt update , and install mysql and depences
+#    
 - name: apt update
   apt: update_cache=yes
 
@@ -22,8 +27,14 @@
     - python-pip
   notify: restart mysql-server
 
+#
+# insatll mysql-python module , require for Ansible mysql_db module.
+#
 - name: install mysql-python module 
   pip: name=mysql-python state=latest
 
+#
+# restart mysql now.
+#
 - name: restart mysql
   meta: flush_handlers

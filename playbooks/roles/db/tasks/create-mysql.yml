@@ -1,7 +1,22 @@
 ---
-# create mysql database
+# create mysql database and tables
 - name: Create a new database with name 'ansible'
   mysql_db:
-    name: ansible
+    name: '{{mysql_db_name}}'
+    login_user: '{{mysql_root_user}}'
+    login_password: '{{mysql_root_pass}}'
     state: present
 
+- name: create mysql queries files directory
+  file: path=/tmp/mysql-queries state=directory
+
+- name: copy sql files to host 
+  copy: src=mysql-create-table.sql dest=/tmp/mysql-queries
+
+- name: Create Person Table in ansible db
+  mysql_db:
+    name: '{{mysql_db_name}}'
+    login_user: '{{mysql_root_user}}'
+    login_password: '{{mysql_root_pass}}' 
+    state: import
+    target: /tmp/mysql-queries/mysql-create-table.sql

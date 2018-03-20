@@ -1,0 +1,8 @@
+---
+# tasks file for mysql-db
+
+# install mysql 
+- import_tasks: mysql-install.yml
+
+# create mysql database and create a table.
+- import_tasks: mysql-database.yml

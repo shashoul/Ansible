@@ -1,0 +1,9 @@
+---
+# vars file for mysql-db
+
+mysql_db_name: devops       # database name that will be created
+mysql_root_user: root       # mysql root user name
+mysql_root_pass: foo123     # mysql root user password
+
+mysql_file: mysql-init-database.sql   # contains our mysql queries
+mysql_host_dir: /tmp/mysql-queries    # our host mysql queries

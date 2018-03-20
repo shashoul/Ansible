@@ -1,0 +1,31 @@
+---
+#
+# create our database 
+#
+- name: create a new database with name {{mysql_db_name}}
+  mysql_db:
+    name: '{{mysql_db_name}}'
+    login_user: '{{mysql_root_user}}'
+    login_password: '{{mysql_root_pass}}'
+    state: present
+
+#
+# create on host our sql queries directory
+# and copy our queries file.
+#
+- name: create mysql queries files directory
+  file: path='{{mysql_host_dir}}' state=directory
+
+- name: copy sql files to host 
+  copy: src='{{mysql_file}}' dest='{{mysql_host_dir}}'
+
+#
+# create Person table in our database
+#
+- name: create Person table in our db
+  mysql_db:
+    name: '{{mysql_db_name}}'
+    login_user: '{{mysql_root_user}}'
+    login_password: '{{mysql_root_pass}}' 
+    state: import
+    target: '{{mysql_host_dir}}/{{mysql_file}}'

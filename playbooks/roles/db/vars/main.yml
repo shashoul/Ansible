@@ -1,2 +1,5 @@
 ---
 # vars file for db
+mysql_db_name: devops
+mysql_root_user: root
+mysql_root_pass: foo123
